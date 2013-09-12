@@ -11,6 +11,15 @@ class MD_atom
     @y= y
     @z= z
     @species= species
+    @x=pbc(@x)
+    @y=pbc(@y)
+    @z=pbc(@z)
+  end
+
+  def pbc(x)
+    x = x + 1.0 if x < 0.0
+    x = x - 1.0 if x >= 1.0
+    return x
   end
 end
 
