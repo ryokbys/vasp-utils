@@ -1,6 +1,9 @@
 #!/usr/bin/ruby
 
-require './MD_classes.rb'
+#.....add the directory where this file exists to the search path
+$: << File.dirname(__FILE__)
+
+require 'MD_classes.rb'
 
 a1= [10.0, 0, 0]
 a2= [0, 10.0, 0]

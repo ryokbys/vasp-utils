@@ -8,8 +8,11 @@
 #   - POSCAR
 #
 
-require './MD_classes.rb'
-require './OUTCAR.rb'
+#.....add the directory where this file exists to the search path
+$: << File.dirname(__FILE__)
+
+require 'MD_classes.rb'
+require 'OUTCAR.rb'
 
 #AA2BOHR= 1.88972616356
 AA2BOHR= 1.0/0.5291772
