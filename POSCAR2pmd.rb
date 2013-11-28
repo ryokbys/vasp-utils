@@ -1,18 +1,18 @@
 #!/usr/bin/ruby
 #
-# Convert POSCAR file to Akira-format file
+# Convert POSCAR file to pmd-format file
 #
 # Usage:
-#   $ ./POSCAR2akr.rb > akr000
+#   $ ./POSCAR2pmd.rb > pmd00000-0000
 # Input:
 #   - POSCAR
+#   - OUTCAR?
 #
 
 #.....add the directory where this file exists to the search path
 $: << File.dirname(__FILE__)
 
 require 'MD_classes.rb'
-require 'OUTCAR.rb'
 
 #AA2BOHR= 1.88972616356
 AA2BOHR= 1.0/0.5291772
@@ -70,14 +70,12 @@ def read_POSCAR(filename="./POSCAR")
 #  p a3
 end
 
-def pbc(x)
-  return x+1.0 if x <= 0.0
-  return x-1.0 if x >  1.0
-  return x
+def species2tag(isp,id)
+  return isp +0.1 +1e-14*id
 end
 
-def out_Akira
-  printf(" %6d %3d %3d %3d\n",$system.natm,2,0,0)
+def out_pmd
+  printf(" %6d\n",$system.natm)
   a1= $system.a1
   a2= $system.a2
   a3= $system.a3
@@ -89,14 +87,25 @@ def out_Akira
   printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
   printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
   printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])
-  i=0
-  $system.natm.times do
+  printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
+  printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
+  printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
+  $system.natm.times do |i|
     atom= $system.atoms[i]
-    printf("%3d %12.7f %12.7f %12.7f %7.3f %7.3f\n",
-           atom.species, pbc(atom.x),pbc(atom.y),pbc(atom.z),
-           $chrgs[i].to_f, $mags[i].to_f)
-    i+=1
+    printf("%22.14e %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",\
+           species2tag(atom.species,i+1), pbc(atom.x),pbc(atom.y),pbc(atom.z),\
+           0.0, 0.0, 0.0,\
+           0.0, 0.0,\
+           0.0, 0.0, 0.0,\
+           0.0, 0.0, 0.0,\
+           0.0, 0.0, 0.0)
   end
+end
+
+def pbc(x)
+  return x+1.0 if x <= 0.0
+  return x-1.0 if x >  1.0
+  return x
 end
 
 if ARGV[0] then
@@ -104,7 +113,5 @@ if ARGV[0] then
 else
   read_POSCAR
 end
-$mags=get_magnetization
-$chrgs=get_charge
 
-out_Akira
+out_pmd
