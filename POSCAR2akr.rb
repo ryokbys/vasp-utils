@@ -51,7 +51,11 @@ def read_POSCAR(filename="./POSCAR")
     i += 1
   end
   #.....7th line: comment
-  $c7= file.gets
+  c7= file.gets
+  if c7[0..0].downcase == 's' then
+    #.....read another line
+    c8= file.gets
+  end
   #.....8th--: atom positions
   pos=[]
   sid=0
