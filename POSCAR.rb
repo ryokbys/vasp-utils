@@ -30,17 +30,17 @@ class POSCAR
     @afac= file.gets.to_f
     #.....3rd-5th lines: lattice vectors
     data= file.gets.split
-    @a1[0]= data[0].to_f
-    @a2[0]= data[1].to_f
-    @a3[0]= data[2].to_f
+    3.times do |i|
+      @a1[i]= data[i].to_f
+    end
     data= file.gets.split
-    @a1[1]= data[0].to_f
-    @a2[1]= data[1].to_f
-    @a3[1]= data[2].to_f
+    3.times do |i|
+      @a2[i]= data[i].to_f
+    end
     data= file.gets.split
-    @a1[2]= data[0].to_f
-    @a2[2]= data[1].to_f
-    @a3[2]= data[2].to_f
+    3.times do |i|
+      @a3[i]= data[i].to_f
+    end
     #.....6th line: num of atoms
     i=0
     (file.gets.split).each do |n|
@@ -77,9 +77,9 @@ class POSCAR
     file= open(filename,'w')
     file.write(@c1)
     file.write(" %10.5f\n" % @afac)
-    file.write(" %12.7f %12.7f %12.7f\n" % [@a1[0],@a2[0],@a3[0]])
-    file.write(" %12.7f %12.7f %12.7f\n" % [@a1[1],@a2[1],@a3[1]])
-    file.write(" %12.7f %12.7f %12.7f\n" % [@a1[2],@a2[2],@a3[2]])
+    file.write(" %12.7f %12.7f %12.7f\n" % @a1)
+    file.write(" %12.7f %12.7f %12.7f\n" % @a2)
+    file.write(" %12.7f %12.7f %12.7f\n" % @a3)
     @num_atoms.each do |n|
       file.write(" %d " % n)
     end
