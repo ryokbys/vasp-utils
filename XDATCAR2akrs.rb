@@ -10,8 +10,11 @@
 #   - XDATCAR (atom configuration per each step)
 #
 
-require './MD_classes.rb'
-require './OUTCAR.rb'
+#.....add the directory where this file exists to the search path
+$: << File.dirname(__FILE__)
+
+require 'MD_classes.rb'
+require 'OUTCAR.rb'
 
 #AA2BOHR= 1.88972616356
 AA2BOHR= 1.0/0.5291772
@@ -51,7 +54,10 @@ def read_POSCAR(filename="./POSCAR")
   end
   #.....7th line: comment
   $c7= file.gets
-  $c7= file.gets
+  if $c7[0..0].downcase == 's' then
+    #.....read another line
+    $c8= file.gets
+  end
   #.....9th--: atom positions
   pos=[]
   sid=0

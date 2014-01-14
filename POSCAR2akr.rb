@@ -108,7 +108,8 @@ if ARGV[0] then
 else
   read_POSCAR
 end
-$mags=get_magnetization
+$mags= Array.new($system.natm,0)
+# $mags=get_magnetization
 $chrgs=get_charge
 
 out_Akira
