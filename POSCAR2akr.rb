@@ -85,20 +85,18 @@ def out_Akira
   a1= $system.a1
   a2= $system.a2
   a3= $system.a3
-  (0..2).each do |i|
-    a1[i] *= AA2BOHR
-    a2[i] *= AA2BOHR
-    a3[i] *= AA2BOHR
-  end
   printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
   printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
   printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])
   i=0
   $system.natm.times do
     atom= $system.atoms[i]
-    printf("%3d %12.7f %12.7f %12.7f %7.3f %7.3f\n",
-           atom.species, pbc(atom.x),pbc(atom.y),pbc(atom.z),
-           $chrgs[i].to_f, $mags[i].to_f)
+     printf("%3d %12.7f %12.7f %12.7f %7.3f %7.3f\n",
+            atom.species, pbc(atom.x),pbc(atom.y),pbc(atom.z),
+            0.0 ,0.0 )
+#     printf("%3d %12.7f %12.7f %12.7f %7.3f %7.3f\n",
+#            atom.species, pbc(atom.x),pbc(atom.y),pbc(atom.z),
+#            $chrgs[i].to_f, $mags[i].to_f)
     i+=1
   end
 end
@@ -110,6 +108,6 @@ else
 end
 $mags= Array.new($system.natm,0)
 # $mags=get_magnetization
-$chrgs=get_charge
+# $chrgs=get_charge
 
 out_Akira
