@@ -3,7 +3,7 @@
 # Convert POSCAR file to pmd-format file
 #
 # Usage:
-#   $ ./POSCAR2pmd.rb > pmd00000-0000
+#   $ ./POSCAR2pmd.rb > pmd00000
 # Input:
 #   - POSCAR
 #   - OUTCAR?
@@ -79,21 +79,17 @@ def species2tag(isp,id)
 end
 
 def out_pmd
-  printf(" %6d\n",$system.natm)
   a1= $system.a1
   a2= $system.a2
   a3= $system.a3
-  (0..2).each do |i|
-    a1[i] *= AA2BOHR
-    a2[i] *= AA2BOHR
-    a3[i] *= AA2BOHR
-  end
+  printf(" %12.7f\n", 1.0)
   printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
   printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
   printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])
   printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
   printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
   printf(" %12.7f %12.7f %12.7f\n", 0.0,0.0,0.0)
+  printf(" %10d\n",$system.natm)
   $system.natm.times do |i|
     atom= $system.atoms[i]
     printf("%22.14e %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",\
@@ -107,8 +103,8 @@ def out_pmd
 end
 
 def pbc(x)
-  return x+1.0 if x <= 0.0
-  return x-1.0 if x >  1.0
+  return x+1.0 if x <  0.0
+  return x-1.0 if x >= 1.0
   return x
 end
 

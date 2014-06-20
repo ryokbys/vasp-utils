@@ -81,13 +81,14 @@ def pbc(x)
 end
 
 def out_Akira
-  printf(" %6d %3d %3d %3d\n",$system.natm,2,0,0)
   a1= $system.a1
   a2= $system.a2
   a3= $system.a3
+  printf(" %12.7f\n",1.0)
   printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
   printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
   printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])
+  printf(" %6d %3d %3d %3d\n",$system.natm,2,0,0)
   i=0
   $system.natm.times do
     atom= $system.atoms[i]
