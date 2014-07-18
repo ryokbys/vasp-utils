@@ -63,7 +63,7 @@ class POSCAR
           if data.length == 6 then
             @flags.push([data[3],data[4],data[5]])
           elsif data.length == 4 then
-            @flags.push([data[3],data[4],data[4]])
+            @flags.push([data[3],data[3],data[3]])
           end
         else
           @flags.push(["T","T","T"])
