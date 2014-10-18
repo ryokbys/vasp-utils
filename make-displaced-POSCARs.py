@@ -40,7 +40,7 @@ poscar= POSCAR()
 poscar.read(fname=fname)
 
 #...original a vectors
-ho= poscar.h
+ho= poscar.h *poscar.afac
 
 hi= np.linalg.inv(ho)
 

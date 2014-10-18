@@ -21,22 +21,32 @@ IBRION= -1 # -1:no update, 0:MD, 1:q-Newton, 2:CG, 3:damped MD
 ISIF= 2 # 2: relax ions only, 3:shell-shape too, 4:shell volume too
 NSW= 0 # number of ion relaxation steps
 
+#...inter-point distance in k-space, usually 0.1(accurate)~0.3(loose)
+KDIS= 0.2
+
 def determine_num_kpoint(length)
   # maximum 11
   # minimum 1
-  if length < 4.0 then
+  nk= (2.0*3.141592/length/KDIS).to_i
+  if nk > 11 then
     return 11
-  elsif length < 6.0 then
-    return 10
-  elsif length < 8.0 then
-    return 8
-  elsif length < 10.0 then
-    return 6
-  elsif length < 14.0 then
-    return 4
-  else
-    return 2
+  elsif nk < 1 then
+    return 1
   end
+  return nk
+  # if length < 4.0 then
+  #   return 11
+  # elsif length < 6.0 then
+  #   return 10
+  # elsif length < 8.0 then
+  #   return 8
+  # elsif length < 10.0 then
+  #   return 6
+  # elsif length < 14.0 then
+  #   return 4
+  # else
+  #   return 2
+  # end
 end
 
 def write_KPOINTS(fname,type,ndiv)

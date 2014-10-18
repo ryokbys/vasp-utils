@@ -24,27 +24,27 @@ def read_POSCAR(filename="./POSCAR")
   #.....1st line: comment
   $c1=file.gets
   #.....2nd line: multiply factor
-  $afac= file.gets.to_f
+  afac= file.gets.to_f
   #.....3rd-5th lines: lattice vectors
   a1=[]
   i=0
   (file.gets.split).each do |a|
-    a1[i]= $afac *a.to_f 
+    a1[i]= a.to_f 
     i += 1
   end
   a2=[]
   i=0
   (file.gets.split).each do |a|
-    a2[i]= $afac *a.to_f
+    a2[i]= a.to_f
     i += 1
   end
   a3=[]
   i=0
   (file.gets.split).each do |a|
-    a3[i]= $afac *a.to_f
+    a3[i]= a.to_f
     i += 1
   end
-  $system= MD_system.new(a1,a2,a3)
+  $system= MD_system.new(afac,a1,a2,a3)
   #.....6th line: num of atoms
   nums=[]
   i=0
@@ -78,13 +78,14 @@ end
 
 def out_Akira(akrname='akr000')
   akrfile=open(akrname,'w') do |line|
-    line.printf(" %6d %3d %3d %3d\n",$system.natm,0,0,0)
+    line.printf(" %20.7f\n",$system.afac)
     a1= $system.a1
     a2= $system.a2
     a3= $system.a3
     line.printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
     line.printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
     line.printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])
+    line.printf(" %6d %3d %3d %3d\n",$system.natm,0,0,0)
     i=0
     $system.natm.times do
       atom= $system.atoms[i]
@@ -103,14 +104,6 @@ end
 
 #============================== start main program here
 read_POSCAR
-
-#.....Angstrom to Bohr radius
-(0..2).each do |i|
-  $system.a1[i] *= AA2BOHR
-  $system.a2[i] *= AA2BOHR
-  $system.a3[i] *= AA2BOHR
-end
-
 
 infname='./XDATCAR'
 if ARGV[0] then
@@ -132,7 +125,7 @@ cskip=file.gets
 cskip=file.gets
 
 #.....output akr000 from POSCAR data
-out_Akira 'akr000'
+out_Akira 'akr0000'
 
 pos=[]
 ifile=0
@@ -147,7 +140,7 @@ while !file.eof
     $system.atoms[ia].y=pos[1]
     $system.atoms[ia].z=pos[2]
   end
-  out_Akira "akr%03d"%[ifile]
+  out_Akira "akr%04d"%[ifile]
   cskip=file.gets
 end
 file.close

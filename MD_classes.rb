@@ -24,9 +24,10 @@ class MD_atom
 end
 
 class MD_system
-  attr_reader :atoms, :natm, :a1, :a2, :a3, :species
+  attr_reader :atoms, :natm, :afac, :a1, :a2, :a3, :species
   
-  def initialize(a1,a2,a3)
+  def initialize(afac,a1,a2,a3)
+    @afac= afac
     @a1=[]
     @a2=[]
     @a3=[]
@@ -66,6 +67,7 @@ class MD_system
   end
 
   def p_box
+    p @afac
     p @a1
     p @a2
     p @a3
