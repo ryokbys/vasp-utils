@@ -23,11 +23,16 @@ def get_displacement(r,theta,phi):
 usage= '%prog [options] [POSCAR]'
 
 parser= optparse.OptionParser(usage=usage)
-parser.add_option("-m","--max-displacement",dest="maxdis",type="float",default=0.1,
-                  help="maximum displacement in Angstrom.")
-parser.add_option("-n","--num-output",dest="nout",type="int",default=10,
-                  help="number of output files in total.")
-parser.add_option("--offset",dest="offset",type="int",default=0,
+parser.add_option("-m","--max-displacement",dest="maxdis",
+                  type="float",default=0.05,
+                  help="maximum displacement in Angstrom."
+                  +" Default value is 0.05.")
+parser.add_option("-n","--num-output",dest="nout",
+                  type="int",default=10,
+                  help="number of output files in total."
+                  +" Default value is 10.")
+parser.add_option("-o","--offset",dest="offset",
+                  type="int",default=0,
                   help="offset of sequential number in output file.")
 (options,args)= parser.parse_args()
 

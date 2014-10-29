@@ -22,27 +22,27 @@ def read_POSCAR(filename="./POSCAR")
   #.....1st line: comment
   $c1=file.gets
   #.....2nd line: multiply factor
-  $afac= file.gets.to_f
+  afac= file.gets.to_f
   #.....3rd-5th lines: lattice vectors
   a1=[]
   i=0
   (file.gets.split).each do |a|
-    a1[i]= $afac *a.to_f 
+    a1[i]= a.to_f 
     i += 1
   end
   a2=[]
   i=0
   (file.gets.split).each do |a|
-    a2[i]= $afac *a.to_f
+    a2[i]= a.to_f
     i += 1
   end
   a3=[]
   i=0
   (file.gets.split).each do |a|
-    a3[i]= $afac *a.to_f
+    a3[i]= a.to_f
     i += 1
   end
-  $system= MD_system.new(a1,a2,a3)
+  $system= MD_system.new(afac,a1,a2,a3)
   #.....6th line: num of atoms
   nums=[]
   i=0
@@ -82,7 +82,7 @@ def out_pmd
   a1= $system.a1
   a2= $system.a2
   a3= $system.a3
-  printf(" %12.7f\n", 1.0)
+  printf(" %12.7f\n", $system.afac)
   printf(" %12.7f %12.7f %12.7f\n", a1[0],a1[1],a1[2])
   printf(" %12.7f %12.7f %12.7f\n", a2[0],a2[1],a2[2])
   printf(" %12.7f %12.7f %12.7f\n", a3[0],a3[1],a3[2])

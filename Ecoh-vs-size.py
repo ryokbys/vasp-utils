@@ -1,5 +1,5 @@
 #!/opt/local/bin/python
-u"""
+"""
 Calculate the cohesive energy as a function of lattice constant,
 by altering the lattice constant in pmd00000 file.
 
@@ -13,8 +13,7 @@ from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
 
 #...constants
-pmddir='~/src/nap/pmd/'
-niter= 20
+niter= 10
 
 def read_POSCAR(fname='POSCAR'):
     f=open(fname,'r')
@@ -80,7 +79,7 @@ if __name__ == '__main__':
     for iter in range(niter+1):
         al= al_min +dl*iter
         replace_1st_line(al)
-        os.system('vasp > out.pmd')
+        os.system('vasp > out.vasp')
         erg= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         vol= get_vol(al,hmat)
         print ' {0:10.4f} {1:10.4f} {2:15.7f}'.format(al,vol,erg)
