@@ -1,6 +1,9 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 #
+u"""
+This class provides read and write functions of VASP POSCAR file.
+"""
 
 import numpy as np
 

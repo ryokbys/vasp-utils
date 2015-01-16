@@ -5,7 +5,8 @@ import sys
 from Atom import Atom
 
 #...constants
-maxnn= 40
+_maxnn= 40
+_max_species= 9
 
 class AtomSystem(object):
     u"""
@@ -143,6 +144,72 @@ class AtomSystem(object):
                     +"\n")
         f.close()
 
+    def read_POSCAR(self,fname='POSCAR'):
+        f=open(fname,'r')
+        # 1st: comment
+        self.c1= f.readline()
+        # 2nd: multiplying factor
+        self.alc= float(f.readline().split()[0])
+        # 3-5: lattice vectors
+        self.a1= np.array([float(x) for x in f.readline().split()])
+        self.a2= np.array([float(x) for x in f.readline().split()])
+        self.a3= np.array([float(x) for x in f.readline().split()])
+        # 6th: num of atoms par species
+        natm_per_spcs= np.array([int(n) for n in f.readline().split()])
+        # 7th: comment (in some cases, 8th line too)
+        self.c7= f.readline()
+        if self.c7[0] in ('s','S'):
+            self.c8= f.readline()
+        # hereafter: atom positions
+        sid= 0
+        self.atoms=[]
+        for ni in natm_per_spcs:
+            sid += 1
+            for j in range(ni):
+                data= [float(x) for x in f.readline().split()]
+                ai= Atom()
+                ai.set_sid(sid)
+                ai.set_pos(data[0],data[1],data[2])
+                self.atoms.append(ai)
+        f.close()
+
+    def write_POSCAR(self,fname='POSCAR'):
+        f= open(fname,'w')
+        if hasattr(self,'c1'):
+            f.write(self.c1)
+        else:
+            f.write('Written by AtomSystem.py\n')
+        f.write(' {0:12.7f}\n'.format(self.alc))
+        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a1[0],
+                                                          self.a1[1],
+                                                          self.a1[2]))
+        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a2[0],
+                                                          self.a2[1],
+                                                          self.a2[2]))
+        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a3[0],
+                                                          self.a3[1],
+                                                          self.a3[2]))
+        # count species in the system
+        natm_per_spcs=[ 0 for i in range(_max_species)]
+        for ai in self.atoms:
+            natm_per_spcs[ai.sid-1] += 1
+        for i in range(_max_species):
+            if natm_per_spcs[i] != 0:
+                f.write(' {0:3d}'.format(natm_per_spcs[i]))
+        f.write('\n')
+
+        if hasattr(self,'c7'):
+            f.write(self.c7)
+        else:
+            f.write('Direct\n')
+        if hasattr(self,'c8'):
+            f.write(self.c8)
+
+        for ai in self.atoms:
+            f.write(' {0:12.f} {1:12.7f} {2:12.7f} T T T\n'.format(
+                ai.pos[0],ai.pos[1],ai.pos[2]))
+        f.close()
+
     def make_pair_list(self,rcut=3.0):
         rc2= rcut**2
         h= np.zeros((3,3))
@@ -187,7 +254,7 @@ class AtomSystem(object):
 
         #...make a pair list
         self.nlspr= np.zeros((self.num_atoms(),),dtype=int)
-        self.lspr= np.zeros((self.num_atoms(),maxnn),dtype=int)
+        self.lspr= np.zeros((self.num_atoms(),_maxnn),dtype=int)
         self.lspr[:]= -1
         # self.lspr= []
         # for i in range(len(self.atoms)):
@@ -238,8 +305,8 @@ class AtomSystem(object):
             n= self.nlspr[ia]
             self.lspr[ia,n]= ja
             self.nlspr[ia] += 1
-            if self.nlspr[ia] >= maxnn:
-                print ' [Error] self.nlspr[{0}] >= maxnn !!!'.format(ia)
+            if self.nlspr[ia] >= _maxnn:
+                print ' [Error] self.nlspr[{0}] >= _maxnn !!!'.format(ia)
                 sys.exit()
         ja= lscl[ja]
         self.scan_j_in_cell(ia,pi,ja,lscl,h,rc2)
