@@ -14,7 +14,7 @@ from POSCAR import POSCAR
 usage= '%prog [options] [POSCAR]'
 
 parser= optparse.OptionParser(usage=usage)
-parser.add_option("-d","--dev",dest="dev",type="float",default=0.05,
+parser.add_option("-d","--dev",dest="dev",type="float",default=0.01,
                   help="maximum value of each strain element.")
 parser.add_option("-n","--num-dev",dest="ndev",type="int",default=2,
                   help="number of devision in each strain element.")

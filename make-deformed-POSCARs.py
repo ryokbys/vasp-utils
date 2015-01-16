@@ -23,7 +23,7 @@ def deform_cubic(poscar):
     ho= copy.deepcopy(poscar.h)
     h = np.zeros((3,3),dtype=float)
     inc= _offset
-    #...uniaxial deformation in x-direction (no y or z is needed)
+    #...uniaxial deformation in x-direction for C11
     de11= 2*_dev/_ndev
     #print " de11 =",de11
     for ne11 in range(_ndev+1):
@@ -42,24 +42,40 @@ def deform_cubic(poscar):
         inc += 1
         poscar.write(fname=_fname+'-{0:03d}'.format(inc))
 
-    #...off diagonal deformation
-    dg12= 2*_dev/_ndev
-    #print " dg12 =",dg12
-    for ng12 in range(_ndev+1):
-        g12= -_dev +ng12*dg12
-        #print "  g12 =",g12
-        h[0,0]= ho[0,0]
-        h[0,1]= g12
-        h[0,2]= g12
-        h[1,0]= g12
-        h[1,1]= ho[1,1]
-        h[1,2]= g12
-        h[2,0]= g12
-        h[2,1]= g12
-        h[2,2]= ho[2,2]
+    #...orthorhombic volume-conserving strain for (C11-C12)
+    dg11= _dev/_ndev
+    for ng11 in range(_ndev+1):
+        g11= ng11*dg11
+        h[0,0]= ho[0,0] +g11
+        h[0,1]= ho[0,1]
+        h[0,2]= ho[0,2]
+        h[1,0]= ho[1,0]
+        h[1,1]= ho[1,1] -g11
+        h[1,2]= ho[1,2]
+        h[2,0]= ho[2,0]
+        h[2,1]= ho[2,1]
+        h[2,2]= ho[2,2] +g11**2 /(1.0-g11**2)
         poscar.h= h
         inc += 1
         poscar.write(fname=_fname+'-{0:03d}'.format(inc))
+
+    #...monoclinic volume-conserving strain for C44
+    dg12= _dev/_ndev
+    for ng12 in range(_ndev+1):
+        g12= ng12*dg12
+        h[0,0]= ho[0,0]
+        h[0,1]= ho[0,1] +g12/2
+        h[0,2]= ho[0,2]
+        h[1,0]= ho[1,0]
+        h[1,1]= ho[1,1] +g12/2
+        h[1,2]= ho[1,2]
+        h[2,0]= ho[2,0]
+        h[2,1]= ho[2,1]
+        h[2,2]= ho[2,2] +g11**2 /(4.0-g11**2)
+        poscar.h= h
+        inc += 1
+        poscar.write(fname=_fname+'-{0:03d}'.format(inc))
+        
     #...restore poscar.h
     poscar.h= ho
 
@@ -106,7 +122,7 @@ def deform_random(poscar):
 
 _usage= '%prog [options] [POSCAR]'
 parser= optparse.OptionParser(usage=_usage)
-parser.add_option("-d","--dev",dest="dev",type="float",default=0.05,
+parser.add_option("-d","--dev",dest="dev",type="float",default=0.01,
                   help="maximum value of each strain element.")
 parser.add_option("-n","--num-dev",dest="ndev",type="int",default=2,
                   help="number of devision in each strain element.")
