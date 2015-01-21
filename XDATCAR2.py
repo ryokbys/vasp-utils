@@ -47,9 +47,8 @@ if __name__ == '__main__':
     usage= '%prog [options]'
 
     parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-s",dest="format",type="string",default="akr",
-                      help="output file format.")
-
+    parser.add_option("-s",dest="format",type="string",default="POSCAR",
+                      help="output file format. Default is POSCAR.")
     (options,args)= parser.parse_args()
 
     out_format= options.format
