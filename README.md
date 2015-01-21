@@ -1,5 +1,5 @@
 # What's this package
-This package includes some utilities which help us to process outputs 
+This package includes some utilities that help us process outputs 
 obtained through VASP calculations.
 
 # Who made this?
