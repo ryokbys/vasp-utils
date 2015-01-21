@@ -166,7 +166,8 @@ class AtomSystem(object):
         for ni in natm_per_spcs:
             sid += 1
             for j in range(ni):
-                data= [float(x) for x in f.readline().split()]
+                line= f.readline().split()
+                data= [ float(line[i]) for i in range(3)]
                 ai= Atom()
                 ai.set_sid(sid)
                 ai.set_pos(data[0],data[1],data[2])
@@ -179,14 +180,14 @@ class AtomSystem(object):
             f.write(self.c1)
         else:
             f.write('Written by AtomSystem.py\n')
-        f.write(' {0:12.7f}\n'.format(self.alc))
-        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a1[0],
+        f.write(' {0:13.8f}\n'.format(self.alc))
+        f.write(' {0:13.8f} {1:13.8f} {2:13.8f}\n'.format(self.a1[0],
                                                           self.a1[1],
                                                           self.a1[2]))
-        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a2[0],
+        f.write(' {0:13.8f} {1:13.8f} {2:13.8f}\n'.format(self.a2[0],
                                                           self.a2[1],
                                                           self.a2[2]))
-        f.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(self.a3[0],
+        f.write(' {0:13.8f} {1:13.8f} {2:13.8f}\n'.format(self.a3[0],
                                                           self.a3[1],
                                                           self.a3[2]))
         # count species in the system
@@ -206,8 +207,10 @@ class AtomSystem(object):
             f.write(self.c8)
 
         for ai in self.atoms:
-            f.write(' {0:12.f} {1:12.7f} {2:12.7f} T T T\n'.format(
-                ai.pos[0],ai.pos[1],ai.pos[2]))
+            f.write(' {0:13.8f} {1:13.8f} {2:13.8f}'.format(ai.pos[0],\
+                                                            ai.pos[1],\
+                                                            ai.pos[2])
+                    +' T T T\n')
         f.close()
 
     def make_pair_list(self,rcut=3.0):
