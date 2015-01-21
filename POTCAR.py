@@ -1,18 +1,18 @@
 #!/bin/env python
 
+import re
+
 def read_POTCAR(fname='POTCAR'):
     file= open(fname,'r')
     species=[]
     valence=[]
     encut=[]
     isp=0
-    #sp= ' PAW_PBE '
-    sp= '  US '
     enmax='ENMAX'
     lines= file.readlines()
     for iline in range(len(lines)):
         line= lines[iline]
-        if sp in line:
+        if re.match(r'^  US ',line) or re.match('^  PAW_PBE ',line):
             isp=isp +1
             data= line.split()
             species.append(data[1]) # species name

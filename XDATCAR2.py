@@ -69,6 +69,8 @@ if __name__ == '__main__':
             +' to this XDATCAR format.'
         exit()
     nstep= int(incar['NSW'])
+    nblock=int(incar['NBLOCK'])
+    nstep= nstep/nblock
 
     #...read POSCAR as 0th step
     if not os.path.exists('./POSCAR'):

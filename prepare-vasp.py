@@ -15,7 +15,7 @@ _version='0.1a'
 _SYSTEM='system made by prepare-vasp.py '+ _version
 _metal= False
 _spin_polarized= False
-_symmetry= True
+_symmetry= False
 _INCAR_name= 'INCAR'
 _KPOINTS_name= 'KPOINTS'
 _KPOINTS_type= 'Monkhorst-Pack' # or 'Gamma'
@@ -23,6 +23,8 @@ _KPOINTS_type= 'Monkhorst-Pack' # or 'Gamma'
 _IBRION= -1  # -1:no update, 0:MD, 1:q-Newton, 2:CG, 3:damped MD
 _ISIF= 2 # 2: relax ions only, 3:shell-shape too, 4:shell volume too
 _NSW= 0 # number of ion relaxation steps
+
+_NPAR= 4
 
 def determine_num_kpoint(b_length,pitch,leven):
     # maximum 11
@@ -95,7 +97,10 @@ def write_INCAR(fname,encut,nbands):
     file.write("IBRION = {0:2d}\n".format(_IBRION))
     file.write("POTIM  = 0.5\n") 
     file.write("SMASS  = 0.4\n") 
-    file.write("NSW    = {0:4d}\n".format(_NSW)) 
+    file.write("NSW    = {0:4d}\n".format(_NSW))
+    file.write("\n")
+    
+    file.write("NPAR   = {0:4d}\n".format(_NPAR)) 
     file.write("\n")
     
     file.close()
