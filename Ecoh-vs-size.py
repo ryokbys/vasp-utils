@@ -59,7 +59,7 @@ if __name__ == '__main__':
     usage= '%prog [options] <min> <max>'
 
     parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-n",dest="niter",type="integer",default=10,
+    parser.add_option("-n",dest="niter",type="int",default=10,
                       help="Number of points to be calculated.")
     parser.add_option("--no-graph",action="store_false",
                       dest="shows_graph",default=True,
@@ -75,8 +75,8 @@ if __name__ == '__main__':
         sys.exit()
 
     al_orig,hmat,natm= read_POSCAR()
-    al_min = float(sys.argv[1])
-    al_max = float(sys.argv[2])
+    al_min = float(args[0])
+    al_max = float(args[1])
 
     if al_orig < al_min or al_orig > al_max:
         print ' [Warning] min and max maybe wrong.'
