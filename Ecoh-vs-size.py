@@ -9,11 +9,9 @@ bulk modulus, too.
 
 import sys,os,commands
 import numpy as np
+import optparse
 from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
-
-#...constants
-niter= 10
 
 def read_POSCAR(fname='POSCAR'):
     f=open(fname,'r')
@@ -58,9 +56,22 @@ def peval(x,p):
 
 if __name__ == '__main__':
     
-    if len(sys.argv) != 3:
+    usage= '%prog [options] <min> <max>'
+
+    parser= optparse.OptionParser(usage=usage)
+    parser.add_option("-n",dest="niter",type="integer",default=10,
+                      help="Number of points to be calculated.")
+    parser.add_option("--no-graph",action="store_false",
+                      dest="shows_graph",default=True,
+                      help="Do not show graph on the screen.")
+    (options,args)= parser.parse_args()
+
+    niter= options.niter
+    shows_graph= options.shows_graph
+
+    if len(args) != 2:
         print ' [Error] number of arguments wrong !!!'
-        print '  Usage: $ {0} <min> <max>'.format(sys.argv[0])
+        print usage
         sys.exit()
 
     al_orig,hmat,natm= read_POSCAR()
@@ -124,13 +135,14 @@ if __name__ == '__main__':
     logfile.write(' Lattice constant = {0:10.4f} Ang.\n'.format(lc))
     logfile.write(' Cohesive energy  = {0:10.3f} eV\n'.format(plsq[0][3]/natm))
     logfile.write(' Bulk modulus     = {0:10.2f} GPa\n'.format(plsq[0][0]*1.602e+2))
-    plt.plot(xarr,peval(xarr,plsq[0]),xarr,yarr,'o')
-    plt.title('Data fitted with Murnaghan eq.')
-    plt.legend(['fitted','data'])
-    plt.xlabel('Volume (Ang.^3)')
-    plt.ylabel('Energy (eV)')
-    plt.savefig('graph.Ecoh-vs-size.eps',dpi=150)
-    plt.show()
+    if shows_graph:
+        plt.plot(xarr,peval(xarr,plsq[0]),xarr,yarr,'o')
+        plt.title('Data fitted with Murnaghan eq.')
+        plt.legend(['fitted','data'])
+        plt.xlabel('Volume (Ang.^3)')
+        plt.ylabel('Energy (eV)')
+        plt.savefig('graph.Ecoh-vs-size.eps',dpi=150)
+        plt.show()
 
     print '{0:=^72}'.format(' OUTPUT ')
     print ' * out.Ecoh-vs-size'
