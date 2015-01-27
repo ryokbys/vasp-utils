@@ -64,10 +64,14 @@ if __name__ == '__main__':
     parser.add_option("--no-graph",action="store_false",
                       dest="shows_graph",default=True,
                       help="Do not show graph on the screen.")
+    parser.add_option("--no-LS",action="store_false",
+                      dest="perform_ls",default=True,
+                      help="Do not perform least square fitting.")
     (options,args)= parser.parse_args()
 
     niter= options.niter
     shows_graph= options.shows_graph
+    perform_ls= options.perform_ls
 
     if len(args) != 2:
         print ' [Error] number of arguments wrong !!!'
@@ -100,6 +104,10 @@ if __name__ == '__main__':
 
     #...revert 0000/pmd00000
     replace_1st_line(al_orig)
+
+    if not perform_ls:
+        print ' Etot-vs-size finished without performing least square fitting...'
+        sys.exit()
 
     #...prepare for Murnaghan fitting
     f= open('out.Etot-vs-size','r')
