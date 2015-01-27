@@ -1,6 +1,6 @@
 #!/opt/local/bin/python
 """
-Calculate the cohesive energy as a function of lattice constant,
+Calculate the total energy as a function of lattice constant,
 by altering the lattice constant in pmd00000 file.
 
 And if possible, calculate equilibrium lattice size and
@@ -84,8 +84,8 @@ if __name__ == '__main__':
         print '   al_min, al_orig, al_max=',al_min, al_orig, al_max
         #sys.exit()
 
-    logfile= open('log.Ecoh-vs-size','w')
-    outfile1= open('out.Ecoh-vs-size','w')
+    logfile= open('log.Etot-vs-size','w')
+    outfile1= open('out.Etot-vs-size','w')
     dl= (al_max -al_min)/niter
     for iter in range(niter+1):
         al= al_min +dl*iter
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     replace_1st_line(al_orig)
 
     #...prepare for Murnaghan fitting
-    f= open('out.Ecoh-vs-size','r')
+    f= open('out.Etot-vs-size','r')
     lines= f.readlines()
     xarr= np.zeros((len(lines)))
     yarr= np.zeros((len(lines)))
@@ -141,10 +141,10 @@ if __name__ == '__main__':
         plt.legend(['fitted','data'])
         plt.xlabel('Volume (Ang.^3)')
         plt.ylabel('Energy (eV)')
-        plt.savefig('graph.Ecoh-vs-size.eps',dpi=150)
+        plt.savefig('graph.Etot-vs-size.eps',dpi=150)
         plt.show()
 
     print '{0:=^72}'.format(' OUTPUT ')
-    print ' * out.Ecoh-vs-size'
-    print ' * log.Ecoh-vs-size'
-    print ' * graph.Ecoh-vs-size.eps'
+    print ' * out.Etot-vs-size'
+    print ' * log.Etot-vs-size'
+    print ' * graph.Etot-vs-size.eps'
