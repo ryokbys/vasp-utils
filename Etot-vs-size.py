@@ -1,6 +1,6 @@
 #!/opt/local/bin/python
 """
-Calculate the cohesive energy as a function of lattice constant,
+Calculate the total energy as a function of lattice constant,
 by altering the lattice constant in pmd00000 file.
 
 And if possible, calculate equilibrium lattice size and
@@ -59,15 +59,19 @@ if __name__ == '__main__':
     usage= '%prog [options] <min> <max>'
 
     parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-n",dest="niter",type="integer",default=10,
+    parser.add_option("-n",dest="niter",type="int",default=10,
                       help="Number of points to be calculated.")
     parser.add_option("--no-graph",action="store_false",
                       dest="shows_graph",default=True,
                       help="Do not show graph on the screen.")
+    parser.add_option("--no-LS",action="store_false",
+                      dest="perform_ls",default=True,
+                      help="Do not perform least square fitting.")
     (options,args)= parser.parse_args()
 
     niter= options.niter
     shows_graph= options.shows_graph
+    perform_ls= options.perform_ls
 
     if len(args) != 2:
         print ' [Error] number of arguments wrong !!!'
@@ -75,8 +79,8 @@ if __name__ == '__main__':
         sys.exit()
 
     al_orig,hmat,natm= read_POSCAR()
-    al_min = float(sys.argv[1])
-    al_max = float(sys.argv[2])
+    al_min = float(args[0])
+    al_max = float(args[1])
 
     if al_orig < al_min or al_orig > al_max:
         print ' [Warning] min and max maybe wrong.'
@@ -84,8 +88,8 @@ if __name__ == '__main__':
         print '   al_min, al_orig, al_max=',al_min, al_orig, al_max
         #sys.exit()
 
-    logfile= open('log.Ecoh-vs-size','w')
-    outfile1= open('out.Ecoh-vs-size','w')
+    logfile= open('log.Etot-vs-size','w')
+    outfile1= open('out.Etot-vs-size','w')
     dl= (al_max -al_min)/niter
     for iter in range(niter+1):
         al= al_min +dl*iter
@@ -101,8 +105,12 @@ if __name__ == '__main__':
     #...revert 0000/pmd00000
     replace_1st_line(al_orig)
 
+    if not perform_ls:
+        print ' Etot-vs-size finished without performing least square fitting...'
+        sys.exit()
+
     #...prepare for Murnaghan fitting
-    f= open('out.Ecoh-vs-size','r')
+    f= open('out.Etot-vs-size','r')
     lines= f.readlines()
     xarr= np.zeros((len(lines)))
     yarr= np.zeros((len(lines)))
@@ -141,10 +149,10 @@ if __name__ == '__main__':
         plt.legend(['fitted','data'])
         plt.xlabel('Volume (Ang.^3)')
         plt.ylabel('Energy (eV)')
-        plt.savefig('graph.Ecoh-vs-size.eps',dpi=150)
+        plt.savefig('graph.Etot-vs-size.eps',dpi=150)
         plt.show()
 
     print '{0:=^72}'.format(' OUTPUT ')
-    print ' * out.Ecoh-vs-size'
-    print ' * log.Ecoh-vs-size'
-    print ' * graph.Ecoh-vs-size.eps'
+    print ' * out.Etot-vs-size'
+    print ' * log.Etot-vs-size'
+    print ' * graph.Etot-vs-size.eps'
