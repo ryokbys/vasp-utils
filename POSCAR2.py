@@ -7,7 +7,7 @@ This script can be only applicable to VASP 5.3, but not to 4.6,
 because of the XDATCAR file-format.
 
 USAGE:
-    $ ./POSCAR2.py
+    $ python ./POSCAR2.py [options] POSCAR
 
 INPUT: (these files must be in the working directory)
     - POSCAR (for the cell information)
@@ -20,7 +20,7 @@ from AtomSystem import AtomSystem
 
 #================================================== main routine
 if __name__ == '__main__':
-    usage= '%prog [options] ./POSCAR'
+    usage= 'python %prog [options] ./POSCAR'
 
     parser= optparse.OptionParser(usage=usage)
     parser.add_option("-s",dest="format",type="string",default="akr",
