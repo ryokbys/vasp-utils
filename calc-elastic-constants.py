@@ -68,6 +68,7 @@ if __name__ == '__main__':
     outfile1= open(outfname,'w')
     #...get reference energy
     os.system('vasp > out.vasp')
+    #os.system('mpirun -np 4 vasp > out.vasp')
     erg0= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
     #erg0= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
     print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(0.0,erg0,erg0,erg0)

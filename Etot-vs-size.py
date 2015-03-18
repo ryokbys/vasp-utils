@@ -94,7 +94,8 @@ if __name__ == '__main__':
     for iter in range(niter+1):
         al= al_min +dl*iter
         replace_1st_line(al)
-        os.system('vasp > out.vasp')
+        #os.system('vasp > out.vasp')
+        os.system('mpirun -np 8 vasp535-intelmpi > out.vasp')
         erg= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         vol= get_vol(al,hmat)
         print ' {0:10.4f} {1:10.4f} {2:15.7f}'.format(al,vol,erg)

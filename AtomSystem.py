@@ -155,7 +155,13 @@ class AtomSystem(object):
         self.a2= np.array([float(x) for x in f.readline().split()])
         self.a3= np.array([float(x) for x in f.readline().split()])
         # 6th: num of atoms par species
-        natm_per_spcs= np.array([int(n) for n in f.readline().split()])
+        data= f.readline().split()
+        if( data[0].isdigit() ):
+            natm_per_spcs= np.array([int(d) for d in data])
+        else:
+            # skip one line and read next line
+            data= f.readline().split()
+            natm_per_spcs= np.array([int(d) for d in data])
         # 7th: comment (in some cases, 8th line too)
         self.c7= f.readline()
         if self.c7[0] in ('s','S'):
