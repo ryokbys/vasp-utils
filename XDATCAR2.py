@@ -68,7 +68,10 @@ if __name__ == '__main__':
             +' to this XDATCAR format.'
         exit()
     nstep= int(incar['NSW'])
-    nblock=int(incar['NBLOCK'])
+    if 'NBLOCK' in incar:
+        nblock=int(incar['NBLOCK'])
+    else:
+        nblock= 1
     nstep= nstep/nblock
 
     #...read POSCAR as 0th step

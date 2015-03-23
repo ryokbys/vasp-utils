@@ -123,17 +123,17 @@ def deform_random(poscar):
 _usage= '%prog [options] [POSCAR]'
 parser= optparse.OptionParser(usage=_usage)
 parser.add_option("-d","--dev",dest="dev",type="float",default=0.01,
-                  help="maximum value of each strain element.")
+                  help="maximum value of each strain element. Default: 0.01.")
 parser.add_option("-n","--num-dev",dest="ndev",type="int",default=2,
-                  help="number of devision in each strain element.")
+                  help="number of devision in each strain element. Default: 2.")
 parser.add_option("-o","--offset",dest="offset",type="int",default=0,
                   help="offset of sequential number in output file."
-                  +" Default value is 0.")
+                  +" Default: 0.")
 parser.add_option("-m","--mode",dest="mode",
                   type="string",default="random",
                   help="deformation mode setting."
                   +" random: random deformation of the cell,"
-                  +" cubic: for the case of cubic symmetry.")
+                  +" cubic: for the case of cubic symmetry. Default: random.")
 
 (options,args)= parser.parse_args()
 
