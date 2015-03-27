@@ -73,7 +73,8 @@ while sz < 1.0/2 do
       (poscar.pos[i])[2] = pbc((poscar.pos[i])[2])
     end
     #.....write POSCAR
-    p "writing POSCAR.%03d" % num
+    #p "writing POSCAR.%03d" % num
+    p "sx,sz=",sx,sz
     poscar.write("POSCAR.%03d" % num)
     num += 1
     sx= sx +dx

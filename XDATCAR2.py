@@ -94,14 +94,17 @@ if __name__ == '__main__':
     a1= [ float(x) for x in f.readline().split()]
     a2= [ float(x) for x in f.readline().split()]
     a3= [ float(x) for x in f.readline().split()]
-    line6= f.readline()
-    nas= [ int(n) for n in f.readline().split() ]
+    line6= f.readline() # Species names
+    nas= [ int(n) for n in f.readline().split() ] # Num of atoms
     for istp in range(nstep):
         line= f.readline()
         n= 0
         for ns in range(len(nas)):
             for ia in range(nas[ns]):
-                xi= [ float(x) for x in f.readline().split()]
+                line= f.readline()
+                if not line:
+                    exit()
+                xi= [ float(x) for x in line.split()]
                 aSys.atoms[n].set_pos(xi[0],xi[1],xi[2])
                 n+=1
         output_AtomSystem(aSys,out_format,istp+1)
