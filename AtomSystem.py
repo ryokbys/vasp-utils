@@ -113,6 +113,8 @@ class AtomSystem(object):
             ai= Atom()
             ai.set_sid(data[0])
             ai.set_pos(data[1],data[2],data[3])
+            # if there are less than 3 auxiliary data, there is not velocity
+            ai.set_vel(data[4],data[5],data[6])
             self.atoms.append(ai)
         f.close()
 
@@ -140,7 +142,9 @@ class AtomSystem(object):
                                                             ai.pos[0],\
                                                             ai.pos[1],\
                                                             ai.pos[2])
-                    +"  {0:.1f}  {1:.1f}  {2:.1f}".format(0.0, 0.0, 0.0)
+                    +"  {0:12.4e}  {1:12.4e}  {2:12.4e}".format(ai.vel[0],\
+                                                                ai.vel[1],\
+                                                                ai.vel[2])
                     +"\n")
         f.close()
 
