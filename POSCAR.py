@@ -33,6 +33,8 @@ class POSCAR(object):
         self.h[2,:]= [ float(x) for x in data ]
         #.....6th line: num of atoms
         data= f.readline().split()
+        if not data[0].isdigit(): # if it is not digit, read next line
+            data= f.readline().split()
         self.num_atoms= np.array([ int(n) for n in data ])
         #.....7th line: comment
         self.c7= f.readline()
