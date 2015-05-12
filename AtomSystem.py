@@ -50,7 +50,9 @@ class AtomSystem(object):
         tmp= f.readline().split()
         tmp= f.readline().split()
         # 8st: num of atoms
-        natm= int(f.readline().split()[0])
+        buff= f.readline().split()
+        natm= int(buff[0])
+        nauxd= 9
         # 9th-: atom positions
         self.atoms= []
         for i in range(natm):
@@ -58,6 +60,7 @@ class AtomSystem(object):
             ai= Atom()
             ai.decode_tag(data[0])
             ai.set_pos(data[1],data[2],data[3])
+            ai.set_auxd(data[4:4+nauxd])
             self.atoms.append(ai)
         f.close()
 
@@ -106,7 +109,12 @@ class AtomSystem(object):
         self.a2= np.array([float(x) for x in f.readline().split()])
         self.a3= np.array([float(x) for x in f.readline().split()])
         # 5th: num of atoms
-        natm= int(f.readline().split()[0])
+        buff= f.readline().split()[0]
+        natm= int(buff[0])
+        nauxd= int(buff[1])
+        if nauxd < 3:
+            print '[Error] read_akr(): nauxd < 3 !!!'
+            sys.exit()
         # 9th-: atom positions
         self.atoms= []
         for i in range(natm):
@@ -182,6 +190,8 @@ class AtomSystem(object):
                 ai= Atom()
                 ai.set_sid(sid)
                 ai.set_pos(data[0],data[1],data[2])
+                ai.set_auxd(line[3:])
+                ai.pbc()
                 self.atoms.append(ai)
         f.close()
 
@@ -218,10 +228,12 @@ class AtomSystem(object):
             f.write(self.c8)
 
         for ai in self.atoms:
-            f.write(' {0:13.8f} {1:13.8f} {2:13.8f}'.format(ai.pos[0],\
-                                                            ai.pos[1],\
-                                                            ai.pos[2])
-                    +' T T T\n')
+            f.write(' {0:13.8f} {1:13.8f} {2:13.8f} '.format(ai.pos[0],\
+                                                             ai.pos[1],\
+                                                             ai.pos[2]) )
+            for aux in ai.auxd:
+                f.write(' {0}'.format(aux))
+            f.write('\n')
         f.close()
 
     def make_pair_list(self,rcut=3.0):
@@ -351,9 +363,19 @@ class AtomSystem(object):
         self.atoms= []
         aid= 0
         for ai0 in atoms0:
+            ai0.pos[0] /= n1
+            ai0.pos[1] /= n2
+            ai0.pos[2] /= n3
             for i1 in range(n1):
                 for i2 in range(n2):
                     for i3 in range(n3):
+                        aid += 1
                         ai= Atom()
                         ai.sid= ai0.sid
-                        
+                        x= ai0.pos[0]+1.0/n1*i1
+                        y= ai0.pos[1]+1.0/n2*i2
+                        z= ai0.pos[2]+1.0/n3*i3
+                        ai.set_pos(x,y,z)
+                        ai.set_auxd(ai0.auxd)
+                        ai.set_id(aid)
+                        self.atoms.append(ai)

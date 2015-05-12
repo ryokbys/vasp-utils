@@ -23,7 +23,8 @@ if __name__ == '__main__':
     usage= '$ python %prog [options] ./POSCAR n1 n2 n3'
 
     parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-o",dest="outfname",type="string",default="POSCAR.expand",
+    parser.add_option("-o",dest="outfname",type="string", \
+                      default="POSCAR.expand", \
                       help="output file name. Default is POSCAR.expand.")
     (options,args)= parser.parse_args()
 
