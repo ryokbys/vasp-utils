@@ -123,9 +123,10 @@ if __name__ == '__main__':
             ra[ia,0]= float(buff[0])
             ra[ia,1]= float(buff[1])
             ra[ia,2]= float(buff[2])
-            va[ia,0]= (ra[ia,0] -rap[ia,0])/dt
-            va[ia,1]= (ra[ia,1] -rap[ia,1])/dt
-            va[ia,2]= (ra[ia,2] -rap[ia,2])/dt
+            va[ia,0:3]= (ra[ia,0:3] -rap[ia,0:3])
+            va[ia,0]= (va[ia,0]-round(va[ia,0]))/dt
+            va[ia,1]= (va[ia,1]-round(va[ia,1]))/dt
+            va[ia,2]= (va[ia,2]-round(va[ia,2]))/dt
             if istp == 0:
                 va[ia,:]= 0.0
             #.....scale velocity to [A/fs]
