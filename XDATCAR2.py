@@ -63,11 +63,11 @@ if __name__ == '__main__':
         print ' ERROR: INCAR does not exist here.'
         exit()
     incar= parse_INCAR('INCAR')
-    if int(incar['ISIF']) > 2:
-        print ' ERROR: ISIF>2 in INCAR'
-        print '   This script would not be applicable'\
-            +' to this XDATCAR format.'
-        exit()
+    # if int(incar['ISIF']) > 2:
+    #     print ' ERROR: ISIF>2 in INCAR'
+    #     print '   This script would not be applicable'\
+    #         +' to this XDATCAR format.'
+    #     exit()
     nstep= int(incar['NSW'])
     if 'NBLOCK' in incar:
         nblock=int(incar['NBLOCK'])
@@ -112,6 +112,16 @@ if __name__ == '__main__':
     va = np.zeros((natm,3),dtype=float)
     vi = np.zeros(3,dtype=float)
     for istp in range(nstep):
+        if int(incar['ISIF']) > 2 and not istp==0:
+            line1= f.readline()
+            alc= float(f.readline().split()[0])
+            a1= [ float(x) for x in f.readline().split()]
+            a2= [ float(x) for x in f.readline().split()]
+            a3= [ float(x) for x in f.readline().split()]
+            line6= f.readline() # Species names
+            line7= f.readline() # num of atoms
+            # print ' line6=',line6
+            # print ' line7=',line7
         line= f.readline()
         n= 0
         rap[:,:]= ra[:,:]
