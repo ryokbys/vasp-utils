@@ -22,10 +22,14 @@ if __name__ == '__main__':
     parser.add_option("-n",dest="nion",type="int", \
                       default=None,
                       help="Number of ions..")
+    parser.add_option("-s",dest="nskip",type="int", \
+                      default=1,
+                      help="Skip writing out every this steps.")
     (options,args)= parser.parse_args()
 
     infname= args[0]
     nion= options.nion
+    nskip= options.nskip
 
     if not nion:
         print '[Error] nion is not defined.'
@@ -60,12 +64,16 @@ if __name__ == '__main__':
         fmatch= re.search(fword,line)
         if ematch:
             nmatch += 1
+            if not nmatch % nskip == 0:
+                continue
             print ' nmatch= ',nmatch
             energy= float(line.split()[4])
             ferg= open('erg.vasp.{0:05d}'.format(nmatch),'w')
             ferg.write('   {0:15.7f}\n'.format(energy))
             ferg.close()
         if fmatch: 
+            if not nmatch % nskip == 0:
+                continue
             freading= True
             na = 0
             ffrc= open('frc.vasp.{0:05d}'.format(nmatch),'w')
