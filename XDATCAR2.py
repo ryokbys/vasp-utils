@@ -23,8 +23,10 @@ import numpy as np
 def output_AtomSystem(aSys,format,num):
     if out_format[0] in ('a','A'):
         aSys.write_akr('akr{0:04d}'.format(num))
-    elif out_format[0] in ('p','P'):
+    elif out_format[0] in ('P'):
         aSys.write_POSCAR('POSCAR{0:04d}'.format(num))
+    elif out_format[0] in ('p'):
+        aSys.write_pmd('pmd{0:04d}'.format(num))
     return
 
 def parse_INCAR(fname='INCAR'):

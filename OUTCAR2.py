@@ -63,7 +63,6 @@ if __name__ == '__main__':
         ematch= re.search(eword,line)
         fmatch= re.search(fword,line)
         if ematch:
-            nmatch += 1
             if not nmatch % nskip == 0:
                 continue
             print ' nmatch= ',nmatch
@@ -72,6 +71,7 @@ if __name__ == '__main__':
             ferg.write('   {0:15.7f}\n'.format(energy))
             ferg.close()
         if fmatch: 
+            nmatch += 1
             if not nmatch % nskip == 0:
                 continue
             freading= True
