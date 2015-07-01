@@ -56,27 +56,29 @@ if __name__ == '__main__':
         if ans in ('n','N'):
             exit()
 
-    nmatch= 0
+    nerg= -1
+    nfrc= -1
     force= []
     freading= False
     for line in f.readlines():
         ematch= re.search(eword,line)
         fmatch= re.search(fword,line)
         if ematch:
-            if not nmatch % nskip == 0:
+            nerg += 1
+            if not nerg % nskip == 0:
                 continue
-            print ' nmatch= ',nmatch
+            print ' nmatch= ',nerg
             energy= float(line.split()[4])
-            ferg= open('erg.vasp.{0:05d}'.format(nmatch),'w')
+            ferg= open('erg.vasp.{0:05d}'.format(nerg),'w')
             ferg.write('   {0:15.7f}\n'.format(energy))
             ferg.close()
         if fmatch: 
-            nmatch += 1
-            if not nmatch % nskip == 0:
+            nfrc += 1
+            if not nfrc % nskip == 0:
                 continue
             freading= True
             na = 0
-            ffrc= open('frc.vasp.{0:05d}'.format(nmatch),'w')
+            ffrc= open('frc.vasp.{0:05d}'.format(nfrc),'w')
             ffrc.write('   {0:d}\n'.format(nion))
             continue
         if freading:
