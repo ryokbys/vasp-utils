@@ -71,7 +71,7 @@ def deform_cubic(poscar):
         h[1,2]= ho[1,2]
         h[2,0]= ho[2,0]
         h[2,1]= ho[2,1]
-        h[2,2]= ho[2,2] +g11**2 /(4.0-g11**2)
+        h[2,2]= ho[2,2] +g12**2 /(4.0-g12**2)
         poscar.h= h
         inc += 1
         poscar.write(fname=_fname+'-{0:03d}'.format(inc))
