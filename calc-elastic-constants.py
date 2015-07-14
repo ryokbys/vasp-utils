@@ -8,12 +8,11 @@ w.r.t. given strains.
 
 import sys,os,commands
 import numpy as np
+import optparse
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 #...constants
-niter= 10
-dltmax= 0.01
 outfname='out.elastic-constants'
 graphname='graph.elastic-constants.eps'
 
@@ -57,31 +56,52 @@ def quad_func(x,a,b):
 
 if __name__ == '__main__':
     
-    if len(sys.argv) != 1:
+    usage= '%prog [options]'
+
+    parser= optparse.OptionParser(usage=usage)
+    parser.add_option("-n",dest="niter",type="int",default=10,
+                      help="Number of points to be calculated.")
+    parser.add_option("-d",dest="dltmax",type="float",default=0.01,
+                      help="Max deviation of finite difference..")
+    parser.add_option("-p",action="store_true",
+                      dest="plot",default=False,
+                      help="Plot a graph on the screen.")
+    parser.add_option("--cmd",dest="cmd",type="string",
+                      default='~/bin/vasp > out.vasp',
+                      help="vasp execution command")
+    (options,args)= parser.parse_args()
+
+    if len(args) != 0:
         print ' [Error] number of arguments wrong !!!'
-        print '  Usage: $ {0}'.format(sys.argv[0])
+        print '  Usage: $ {0}'.format(args[0])
         sys.exit()
+
+    niter= options.niter
+    shows_graph= options.plot
+    cmd= options.cmd
+    dltmax= options.dltmax
 
     al,hmat0,natm= read_POSCAR()
     hmax= np.max(hmat0)
 
     outfile1= open(outfname,'w')
     #...get reference energy
-    os.system('vasp > out.vasp')
+    os.system(cmd)
     #os.system('mpirun -np 4 vasp > out.vasp')
     erg0= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
     #erg0= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
-    print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(0.0,erg0,erg0,erg0)
-    outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(0.0,erg0,erg0,erg0))
+    # print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(0.0,erg0,erg0,erg0)
+    # outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(0.0,erg0,erg0,erg0))
     ddlt= dltmax/niter
-    for iter in range(niter):
-        dlt= (ddlt*(iter+1))
+    for iter in range(-niter/2,niter/2+1):
+        #dlt= (ddlt*(iter+1))
+        dlt= ddlt*iter
         dh= hmax*dlt
         #...uniaxial strain for calc C11
         hmat= np.copy(hmat0)
         hmat[0,0]= hmat[0,0] +dh
         replace_hmat(hmat)
-        os.system('vasp > out.vasp')
+        os.system(cmd)
         #erg11= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg11= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         #...orthorhombic volume-conserving strain for (C11-C12)
@@ -90,7 +110,7 @@ if __name__ == '__main__':
         hmat[1,1]= hmat[1,1] -dh
         hmat[2,2]= hmat[2,2] +dh**2/(1.0-dh**2)
         replace_hmat(hmat)
-        os.system('vasp > out.vasp')
+        os.system(cmd)
         #erg12= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg12= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         #...monoclinic volume-conserving strain for C44
@@ -99,7 +119,7 @@ if __name__ == '__main__':
         hmat[1,0]= hmat[1,0] +dh/2
         hmat[2,2]= hmat[2,2] +dh**2/(4.0-dh**2)
         replace_hmat(hmat)
-        os.system('vasp > out.vasp')
+        os.system(cmd)
         #erg44= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg44= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(dlt,erg11,erg12,erg44)
@@ -152,18 +172,19 @@ if __name__ == '__main__':
     print ' Young\'s modulus = {0:10.3f} GPa'.format(ymod)
     print ' Poisson\'s ratio = {0:10.3f}'.format(prto)
     print ' shear modulus   = {0:10.3f} GPa'.format(smod)
-    
-    plt.plot(dlts,quad_func(dlts,*popt11),dlts,e11s,'o')
-    plt.plot(dlts,quad_func(dlts,*popt12),dlts,e12s,'o')
-    plt.plot(dlts,quad_func(dlts,*popt44),dlts,e44s,'o')
-    plt.title('Energy vs. strain')
-    plt.legend(['C11 fitted','C11 data'
-                ,'C12 fitted','C12 data'
-                ,'C44 fitted','C44 data'],loc=2)
-    plt.xlabel('Strain')
-    plt.ylabel('Energy (eV)')
-    plt.savefig(graphname,dpi=150)
-    plt.show()
+
+    if shows_graph:
+        plt.plot(dlts,quad_func(dlts,*popt11),dlts,e11s,'o')
+        plt.plot(dlts,quad_func(dlts,*popt12),dlts,e12s,'o')
+        plt.plot(dlts,quad_func(dlts,*popt44),dlts,e44s,'o')
+        plt.title('Energy vs. strain')
+        plt.legend(['C11 fitted','C11 data'
+                    ,'C12 fitted','C12 data'
+                    ,'C44 fitted','C44 data'],loc=2)
+        plt.xlabel('Strain')
+        plt.ylabel('Energy (eV)')
+        plt.savefig(graphname,dpi=150)
+        plt.show()
 
     print '{0:=^72}'.format(' OUTPUT ')
     print ' * '+outfname

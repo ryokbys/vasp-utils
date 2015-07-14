@@ -36,9 +36,15 @@ afac0= copy.deepcopy(poscar.afac)
 
 inc= offset
 
-da= 2 *afac0*dev/ndev
-al0= afac0 *(1.0-dev)
+da= 2*dev/ndev *afac0
+al0= afac0 *(1.0 -dev)
+print "afac0=",afac0
+print "dev  =",dev
+print "ndev =",ndev
+print "da   =",da
+print "al0  =",al0
 for na in range(ndev+1):
     poscar.afac= al0 +da*na
+    print "poscar.afac=",poscar.afac
     inc += 1
     poscar.write(fname=fname+'-{0:03d}'.format(inc))

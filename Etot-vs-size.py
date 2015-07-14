@@ -65,17 +65,21 @@ if __name__ == '__main__':
     parser= optparse.OptionParser(usage=usage)
     parser.add_option("-n",dest="niter",type="int",default=10,
                       help="Number of points to be calculated.")
-    parser.add_option("--no-graph",action="store_false",
-                      dest="shows_graph",default=True,
-                      help="Do not show graph on the screen.")
+    parser.add_option("-p",action="store_true",
+                      dest="shows_graph",default=False,
+                      help="Show a graph on the screen.")
     parser.add_option("--no-LS",action="store_false",
                       dest="perform_ls",default=True,
                       help="Do not perform least square fitting.")
+    parser.add_option("--cmd",dest="cmd",type="string",
+                      default='~/bin/vasp > out.vasp',
+                      help="vasp execution command")
     (options,args)= parser.parse_args()
 
     niter= options.niter
     shows_graph= options.shows_graph
     perform_ls= options.perform_ls
+    cmd= options.cmd
 
     if len(args) != 2:
         print ' [Error] number of arguments wrong !!!'
@@ -99,7 +103,7 @@ if __name__ == '__main__':
         al= al_min +dl*iter
         replace_1st_line(al)
         #os.system('vasp > out.vasp')
-        os.system('mpirun -np 8 vasp535-intelmpi > out.vasp')
+        os.system(cmd)
         erg= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         vol= get_vol(al,hmat)
         print ' {0:10.4f} {1:10.4f} {2:15.7f}'.format(al,vol,erg)
