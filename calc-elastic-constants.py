@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 #...constants
 outfname='out.elastic-constants'
+logfname='log.elastic-constants'
 graphname='graph.elastic-constants.eps'
 
 def read_POSCAR(fname='POSCAR'):
@@ -85,6 +86,7 @@ if __name__ == '__main__':
     hmax= np.max(hmat0)
 
     outfile1= open(outfname,'w')
+    logfile= open(logfname,'w')
     #...get reference energy
     os.system(cmd)
     #os.system('mpirun -np 4 vasp > out.vasp')
@@ -124,6 +126,7 @@ if __name__ == '__main__':
         erg44= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(dlt,erg11,erg12,erg44)
         outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(dlt,erg11,erg12,erg44))
+        logfile.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(dlt,erg11,erg12,erg44))
     outfile1.close()
 
     #...revert POSCAR
@@ -154,24 +157,35 @@ if __name__ == '__main__':
     popt12,pcov12= curve_fit(quad_func,dlts,e12s,p0=p0)
     popt44,pcov44= curve_fit(quad_func,dlts,e44s,p0=p0)
 
-    c11= popt11[0]/vol*2 *160.2
-    c11_c12= popt12[0]/vol *160.2
+    c11= popt11[0]/vol*2 *160.218
+    c11_c12= popt12[0]/vol *160.218
     c12= c11 -c11_c12
-    c44= popt44[0]/vol*2 *160.2
+    c44= popt44[0]/vol*2 *160.218
 
     #...output results
-    print '{0:=^72}'.format(' RESULTS ')
-    print ' C11     = {0:10.3f} GPa'.format(c11)
-    print ' C11-C12 = {0:10.3f} GPa'.format(c11_c12)
-    print ' C12     = {0:10.3f} GPa'.format(c12)
-    print ' C44     = {0:10.3f} GPa'.format(c44)
+    # print '{0:=^72}'.format(' RESULTS ')
+    # print ' C11     = {0:10.3f} GPa'.format(c11)
+    # print ' C11-C12 = {0:10.3f} GPa'.format(c11_c12)
+    # print ' C12     = {0:10.3f} GPa'.format(c12)
+    # print ' C44     = {0:10.3f} GPa'.format(c44)
     ymod= c44*(2.0*c44+3.0*c12)/(c11+c44)
     prto= c12/2.0/(c11+c44)
     smod= ymod/2.0/(1.0+prto)
-    print ' Following values maybe only valid for isotropic materials...'
-    print ' Young\'s modulus = {0:10.3f} GPa'.format(ymod)
-    print ' Poisson\'s ratio = {0:10.3f}'.format(prto)
-    print ' shear modulus   = {0:10.3f} GPa'.format(smod)
+    # print ' Following values maybe only valid for isotropic materials...'
+    # print ' Young\'s modulus = {0:10.3f} GPa'.format(ymod)
+    # print ' Poisson\'s ratio = {0:10.3f}'.format(prto)
+    # print ' shear modulus   = {0:10.3f} GPa'.format(smod)
+    str= '{0:=^72}\n'.format(' RESULTS ') \
+         +' C11     = {0:10.3f} GPa\n'.format(c11) \
+         +' C11-C12 = {0:10.3f} GPa\n'.format(c11_c12) \
+         +' C12     = {0:10.3f} GPa\n'.format(c12) \
+         +' C44     = {0:10.3f} GPa\n'.format(c44) \
+         +' Young\'s modulus = {0:10.3f} GPa\n'.format(ymod) \
+         +' shear modulus   = {0:10.3f} GPa\n'.format(smod) \
+         +' Poisson\'s ratio = {0:10.3f}\n'.format(prto)
+    print str
+    logfile.write(str)
+    logfile.close()
 
     if shows_graph:
         plt.plot(dlts,quad_func(dlts,*popt11),dlts,e11s,'o')
@@ -188,4 +202,5 @@ if __name__ == '__main__':
 
     print '{0:=^72}'.format(' OUTPUT ')
     print ' * '+outfname
+    print ' * '+logfname
     print ' * '+graphname
