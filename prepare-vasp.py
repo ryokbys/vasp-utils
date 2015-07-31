@@ -130,6 +130,7 @@ if __name__ == '__main__':
     poscar.read()
     
     potcar= POTCAR.read_POTCAR()
+    species= potcar['species']
     encut= max(potcar['encut'])
     valences= potcar['valence']
     a1= poscar.h[:,0]
@@ -138,6 +139,7 @@ if __name__ == '__main__':
     al= poscar.afac
     natms= poscar.num_atoms
 
+    print " species:",species
     print " encut:",encut
     print " valences:",valences
     print " natms:",natms

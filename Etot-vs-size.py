@@ -25,9 +25,13 @@ def read_POSCAR(fname='POSCAR'):
     hmat[2]= [ float(x) for x in f.readline().split() ]
     buffer= f.readline().split()
     if buffer[0].isdigit():
-        natm= int(buffer[0])
+        natm= 0
+        for b in buffer:
+            natm += int(b)
     else:
-        natm= int(f.readline().split()[0])
+        natm= 0
+        for b in f.readline().split():
+            natm += int(b)
     f.close()
     return (al,hmat,natm)
 
