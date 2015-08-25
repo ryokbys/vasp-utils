@@ -26,7 +26,7 @@ def output_AtomSystem(aSys,format,num):
     elif out_format[0] in ('P'):
         aSys.write_POSCAR('POSCAR{0:04d}'.format(num))
     elif out_format[0] in ('p'):
-        aSys.write_pmd('pmd{0:04d}'.format(num))
+        aSys.write_pmd('pmd{0:05d}'.format(num))
     return
 
 def parse_INCAR(fname='INCAR'):
