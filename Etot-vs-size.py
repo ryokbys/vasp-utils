@@ -7,7 +7,7 @@ And if possible, calculate equilibrium lattice size and
 bulk modulus, too.
 """
 
-import sys,os,commands
+import sys,os,commands,copy
 import numpy as np
 import optparse
 from scipy.optimize import leastsq
@@ -53,6 +53,18 @@ def replace_1st_line(x,fname='POSCAR'):
             g.write(ini[l])
     g.close()
 
+def replace_hmat(hmat,fname='POSCAR'):
+    f=open(fname,'r')
+    ini= f.readlines()
+    f.close()
+    g=open(fname,'w')
+    for l in range(len(ini)):
+        if 2 <= l <= 4:
+            g.write(' {0:12.7f} {1:12.7f} {2:12.7f}\n'.format(hmat[l-2,0],hmat[l-2,1],hmat[l-2,2]))
+        else:
+            g.write(ini[l])
+    g.close()
+
 def residuals(p,y,x):
     b,bp,v0,ev0= p
     err= y -( b*x/(bp*(bp-1.0)) *(bp*(1.0-v0/x) +(v0/x)**bp -1.0) +ev0 )
@@ -64,7 +76,7 @@ def peval(x,p):
 
 if __name__ == '__main__':
     
-    usage= '%prog [options] <min> <max>'
+    usage= '%prog [options] <strain-%>'
 
     parser= optparse.OptionParser(usage=usage)
     parser.add_option("-n",dest="niter",type="int",default=10,
@@ -72,6 +84,15 @@ if __name__ == '__main__':
     parser.add_option("-p",action="store_true",
                       dest="shows_graph",default=False,
                       help="Show a graph on the screen.")
+    parser.add_option("-x",action="store_true",
+                      dest="mvx",default=False,
+                      help="change in x-direction.")
+    parser.add_option("-y",action="store_true",
+                      dest="mvy",default=False,
+                      help="change in y-direction.")
+    parser.add_option("-z",action="store_true",
+                      dest="mvz",default=False,
+                      help="change in z-direction.")
     parser.add_option("--no-LS",action="store_false",
                       dest="perform_ls",default=True,
                       help="Do not perform least square fitting.")
@@ -84,28 +105,51 @@ if __name__ == '__main__':
     shows_graph= options.shows_graph
     perform_ls= options.perform_ls
     cmd= options.cmd
+    mvx= options.mvx
+    mvy= options.mvy
+    mvz= options.mvz
 
-    if len(args) != 2:
+    if len(args) != 1:
         print ' [Error] number of arguments wrong !!!'
         print usage
         sys.exit()
 
-    al_orig,hmat,natm= read_POSCAR()
-    al_min = float(args[0])
-    al_max = float(args[1])
+    #....default values
+    strain= 10.0
 
-    if al_orig < al_min or al_orig > al_max:
-        print ' [Warning] min and max maybe wrong.'
-        print '   hoping you know what you are doing.'
-        print '   al_min, al_orig, al_max=',al_min, al_orig, al_max
-        #sys.exit()
+    strain= float(args[0])/100
+    al_orig,hmat_orig,natm= read_POSCAR()
+    hmat= copy.copy(hmat_orig)
+    hmat_min= copy.copy(hmat_orig)
+    hmat_max= copy.copy(hmat_orig)
+    dhmat= np.zeros((3,3),dtype=float)
+    if not mvx and not mvy and not mvz:
+        al_min= al_orig*(1.0-strain)
+        al_max= al_orig*(1.0+strain)
+        dl= (al_max-al_min)/niter
+    else:
+        if mvx:
+            hmat_min[0]= hmat_orig[0]*(1.0-strain)
+            hmat_max[0]= hmat_orig[0]*(1.0+strain)
+        if mvy:
+            hmat_min[1]= hmat_orig[1]*(1.0-strain)
+            hmat_max[1]= hmat_orig[1]*(1.0+strain)
+        if mvz:
+            hmat_min[2]= hmat_orig[2]*(1.0-strain)
+            hmat_max[2]= hmat_orig[2]*(1.0+strain)
+        dhmat= (hmat_max -hmat_min)/niter
 
     logfile= open('log.Etot-vs-size','w')
     outfile1= open('out.Etot-vs-size','w')
-    dl= (al_max -al_min)/niter
     for iter in range(niter+1):
-        al= al_min +dl*iter
-        replace_1st_line(al)
+        if not mvx and not mvy and not mvz:
+            al= al_min +dl*iter
+            hmat= hmat_orig
+            replace_1st_line(al)
+        else:
+            al= al_orig
+            hmat= hmat_min +dhmat*iter
+            replace_hmat(hmat)
         #os.system('vasp > out.vasp')
         os.system(cmd)
         erg= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
@@ -116,7 +160,12 @@ if __name__ == '__main__':
     outfile1.close()
 
     #...revert 0000/pmd00000
-    replace_1st_line(al_orig)
+    if not mvx and not mvy and not mvz:
+        replace_1st_line(al_orig)
+    else:
+        replace_hmat(hmat_orig)
+        print ' Etot-vs-size finished because mvx,y,z=False.'
+        sys.exit()
 
     if not perform_ls:
         print ' Etot-vs-size finished without performing least square fitting...'
@@ -145,9 +194,9 @@ if __name__ == '__main__':
     print ' plsq=',plsq[0]
     print '{0:=^72}'.format(' RESULTS ')
     logfile.write('{0:=^72}\n'.format(' RESULTS '))
-    a1= hmat[0:3,0]
-    a2= hmat[0:3,1]
-    a3= hmat[0:3,2]
+    a1= hmat_orig[0:3,0]
+    a2= hmat_orig[0:3,1]
+    a3= hmat_orig[0:3,2]
     uvol= np.dot(a1,np.cross(a2,a3))
     lc= (plsq[0][2]/uvol)**(1.0/3)
     print ' Lattice constant = {0:10.4f} Ang.'.format(lc)

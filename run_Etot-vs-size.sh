@@ -25,6 +25,6 @@ jobid=$PBS_JOBID
 #$MPIRUN -recvtimeout 100 -np $NPROCS $vaspexec
 #$MPIRUN -recvtimeout 100 -machinefile $PBS_NODEFILE -np $NPROCS $vaspexec
 #mpirun -machinefile $PBS_NODEFILE -np $NPROCS $vaspexec
-python ~/src/vasp-utils/Etot-vs-size.py --cmd="$MPIRUN -recvtimeout 100 -np $NPROCS $vaspexec" 2.9 3.3
+python ~/src/vasp-utils/Etot-vs-size.py --cmd="$MPIRUN -recvtimeout 100 -np $NPROCS $vaspexec" 5.0
 
 
