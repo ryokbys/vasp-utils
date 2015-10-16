@@ -103,6 +103,7 @@ if __name__ == '__main__':
     # print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(0.0,erg0,erg0,erg0)
     # outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(0.0,erg0,erg0,erg0))
     ddlt= dltmax/niter
+    ncalc= 0
     for iter in range(-niter/2,niter/2+1):
         #dlt= (ddlt*(iter+1))
         dlt= ddlt*iter
@@ -114,6 +115,11 @@ if __name__ == '__main__':
         os.system(cmd)
         #erg11= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg11= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
+        ncalc += 1
+        dname="elastic-{0:05d}".format(ncalc)
+        os.system("mkdir -p "+dname)
+        os.system("mv vasprun.xml {0}/".format(dname))
+
         #...orthorhombic volume-conserving strain for (C11-C12)
         hmat= np.copy(hmat0)
         hmat[0,0]= hmat[0,0] +dh
@@ -123,6 +129,11 @@ if __name__ == '__main__':
         os.system(cmd)
         #erg12= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg12= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
+        ncalc += 1
+        dname="elastic-{0:05d}".format(ncalc)
+        os.system("mkdir -p "+dname)
+        os.system("mv vasprun.xml {0}/".format(dname))
+
         #...monoclinic volume-conserving strain for C44
         hmat= np.copy(hmat0)
         hmat[0,1]= hmat[0,1] +dh/2
@@ -132,6 +143,11 @@ if __name__ == '__main__':
         os.system(cmd)
         #erg44= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg44= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
+        ncalc += 1
+        dname="elastic-{0:05d}".format(ncalc)
+        os.system("mkdir -p "+dname)
+        os.system("mv vasprun.xml {0}/".format(dname))
+
         print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(dlt,erg11,erg12,erg44)
         outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(dlt,erg11,erg12,erg44))
         logfile.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(dlt,erg11,erg12,erg44))
