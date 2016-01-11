@@ -1,17 +1,35 @@
 #!/opt/local/bin/python
 """
 Calculate the total energy as a function of lattice constant,
-by altering the lattice constant in pmd00000 file.
+by altering the lattice constant in POSCAR file.
 
 And if possible, calculate equilibrium lattice size and
 bulk modulus, too.
+
+Usage:
+  Eot-vs-size.py [options]
+
+Options:
+  -h, --help  Shows this message and exit.
+  --cmd=CMD   Specifies VASP command. [default: 'vasp > out.vasp']
+  -n NITER    Number of points to be calculated. [default: 5]
+              In case of even number, original size is not used.
+  --no-LS     Do not perform least square fitting. [default: False]
+  -s STRAIN   Maximum strain value in a direction in %. [default: 5.0]
+  -x          Change in x-direction. [default: False]
+  -y          Change in y-direction. [default: False]
+  -z          Change in z-direction. [default: False]
 """
 
 import sys,os,commands,copy
 import numpy as np
-import optparse
+from docopt import docopt
 from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
+
+__author__  = 'Ryo KOBAYASHI'
+__version__ = '160111'
+__licence__ = 'MIT'
 
 def read_POSCAR(fname='POSCAR'):
     f=open(fname,'r')
@@ -41,7 +59,7 @@ def get_vol(al,hmat):
     a3= hmat[0:3,2] *al
     return np.dot(a1,np.cross(a2,a3))
 
-def replace_1st_line(x,fname='POSCAR'):
+def replace_lattice_constant(x,fname='POSCAR'):
     f=open(fname,'r')
     ini= f.readlines()
     f.close()
@@ -75,49 +93,22 @@ def peval(x,p):
     return b*x/(bp*(bp-1.0)) *(bp*(1.0-v0/x) +(v0/x)**bp -1.0) +ev0
 
 if __name__ == '__main__':
-    
-    usage= '%prog [options] <strain-%>'
 
-    parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-n",dest="niter",type="int",default=10,
-                      help="Number of points to be calculated.")
-    parser.add_option("-p",action="store_true",
-                      dest="shows_graph",default=False,
-                      help="Show a graph on the screen.")
-    parser.add_option("-x",action="store_true",
-                      dest="mvx",default=False,
-                      help="change in x-direction.")
-    parser.add_option("-y",action="store_true",
-                      dest="mvy",default=False,
-                      help="change in y-direction.")
-    parser.add_option("-z",action="store_true",
-                      dest="mvz",default=False,
-                      help="change in z-direction.")
-    parser.add_option("--no-LS",action="store_false",
-                      dest="perform_ls",default=True,
-                      help="Do not perform least square fitting.")
-    parser.add_option("--cmd",dest="cmd",type="string",
-                      default='~/bin/vasp > out.vasp',
-                      help="vasp execution command")
-    (options,args)= parser.parse_args()
+    args= docopt(__doc__,version=__version__)
 
-    niter= options.niter
-    shows_graph= options.shows_graph
-    perform_ls= options.perform_ls
-    cmd= options.cmd
-    mvx= options.mvx
-    mvy= options.mvy
-    mvz= options.mvz
+    niter= int(args['-n'])
+    no_LS= args['--no-LS']
+    cmd= args['--cmd']
+    mvx= args['-x']
+    mvy= args['-y']
+    mvz= args['-z']
+    strain= float(args['-s'])
 
-    if len(args) != 1:
-        print ' [Error] number of arguments wrong !!!'
-        print usage
+    if niter < 2:
+        print "Error: NITER must be larger than 1 !!!"
         sys.exit()
 
-    #....default values
-    strain= 10.0
-
-    strain= float(args[0])/100
+    strain= strain/100
     al_orig,hmat_orig,natm= read_POSCAR()
     hmat= copy.copy(hmat_orig)
     hmat_min= copy.copy(hmat_orig)
@@ -126,7 +117,7 @@ if __name__ == '__main__':
     if not mvx and not mvy and not mvz:
         al_min= al_orig*(1.0-strain)
         al_max= al_orig*(1.0+strain)
-        dl= (al_max-al_min)/niter
+        dl= (al_max-al_min)/(niter-1)
     else:
         if mvx:
             hmat_min[0]= hmat_orig[0]*(1.0-strain)
@@ -137,16 +128,16 @@ if __name__ == '__main__':
         if mvz:
             hmat_min[2]= hmat_orig[2]*(1.0-strain)
             hmat_max[2]= hmat_orig[2]*(1.0+strain)
-        dhmat= (hmat_max -hmat_min)/niter
+        dhmat= (hmat_max -hmat_min)/(niter-1)
 
     logfile= open('log.Etot-vs-size','w')
     outfile1= open('out.Etot-vs-size','w')
-    for iter in range(niter+1):
+    for iter in range(niter):
         dname= "Etot-size-{0:05d}".format(iter)
         if not mvx and not mvy and not mvz:
             al= al_min +dl*iter
             hmat= hmat_orig
-            replace_1st_line(al)
+            replace_lattice_constant(al)
         else:
             al= al_orig
             hmat= hmat_min +dhmat*iter
@@ -162,15 +153,16 @@ if __name__ == '__main__':
         logfile.write(' {0:10.4f} {1:10.4f} {2:15.7f}\n'.format(al,vol,erg))
     outfile1.close()
 
-    #...revert 0000/pmd00000
+    #...revert POSCAR
     if not mvx and not mvy and not mvz:
-        replace_1st_line(al_orig)
+        replace_lattice_constant(al_orig)
     else:
         replace_hmat(hmat_orig)
         print ' Etot-vs-size finished because mvx,y,z=False.'
+        print ' And further analysis is not applicable to non-cubic systems.'
         sys.exit()
 
-    if not perform_ls:
+    if no_LS:
         print ' Etot-vs-size finished without performing least square fitting...'
         sys.exit()
 
@@ -208,16 +200,7 @@ if __name__ == '__main__':
     logfile.write(' Lattice constant = {0:10.4f} Ang.\n'.format(lc))
     logfile.write(' Cohesive energy  = {0:10.3f} eV\n'.format(plsq[0][3]/natm))
     logfile.write(' Bulk modulus     = {0:10.2f} GPa\n'.format(plsq[0][0]*1.602e+2))
-    if shows_graph:
-        plt.plot(xarr,peval(xarr,plsq[0]),xarr,yarr,'o')
-        plt.title('Data fitted with Murnaghan eq.')
-        plt.legend(['fitted','data'])
-        plt.xlabel('Volume (Ang.^3)')
-        plt.ylabel('Energy (eV)')
-        plt.savefig('graph.Etot-vs-size.eps',dpi=150)
-        plt.show()
 
     print '{0:=^72}'.format(' OUTPUT ')
     print ' * out.Etot-vs-size'
     print ' * log.Etot-vs-size'
-    print ' * graph.Etot-vs-size.eps'
