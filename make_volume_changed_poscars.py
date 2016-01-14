@@ -9,7 +9,7 @@
 import numpy as np
 import copy,optparse
 
-from POSCAR import POSCAR
+from poscar import POSCAR
 
 usage= '%prog [options] [POSCAR]'
 

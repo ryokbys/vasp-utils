@@ -4,18 +4,26 @@ Calculate elastic constants, C11, C12, C44,
 Young's modulus, poison's ratio, and shear modulus,
 by static method which measures energy differences
 w.r.t. given strains.
+
+Usage:
+  calc-elastic-constants.py [options]
+
+Options:
+  -h, --help  Shows this message and exit.
+  --cmd=CMD   Specifies VASP command. [default: 'vasp > out.vasp']
+  -n ITER     Number of points to be calculated. [default: 5]
+              In case of even number, it does not include original cell.
+  -s STRAIN   Max strain of finite difference. [default: 0.01]
 """
 
 import sys,os,commands
 import numpy as np
-import optparse
+from docopt import docopt
 from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
 
 #...constants
 outfname='out.elastic-constants'
 logfname='log.elastic-constants'
-graphname='graph.elastic-constants.eps'
 
 def read_POSCAR(fname='POSCAR'):
     f=open(fname,'r')
@@ -64,31 +72,15 @@ def quad_func(x,a,b):
     return a *x**2 +b
 
 if __name__ == '__main__':
-    
-    usage= '%prog [options]'
 
-    parser= optparse.OptionParser(usage=usage)
-    parser.add_option("-n",dest="niter",type="int",default=10,
-                      help="Number of points to be calculated.")
-    parser.add_option("-d",dest="dltmax",type="float",default=0.01,
-                      help="Max deviation of finite difference..")
-    parser.add_option("-p",action="store_true",
-                      dest="plot",default=False,
-                      help="Plot a graph on the screen.")
-    parser.add_option("--cmd",dest="cmd",type="string",
-                      default='~/bin/vasp > out.vasp',
-                      help="vasp execution command")
-    (options,args)= parser.parse_args()
+    args= docopt(__doc__)
+    niter= int(args["-n"])
+    cmd= args["--cmd"]
+    strain= float(args["-d"])
 
-    if len(args) != 0:
-        print ' [Error] number of arguments wrong !!!'
-        print '  Usage: $ {0}'.format(args[0])
+    if niter < 2:
+        print "Error: NITER must be larger than 2."
         sys.exit()
-
-    niter= options.niter
-    shows_graph= options.plot
-    cmd= options.cmd
-    dltmax= options.dltmax
 
     al,hmat0,natm= read_POSCAR()
     hmax= np.max(hmat0)
@@ -97,23 +89,22 @@ if __name__ == '__main__':
     logfile= open(logfname,'w')
     #...get reference energy
     os.system(cmd)
-    #os.system('mpirun -np 4 vasp > out.vasp')
     erg0= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
     #erg0= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
     # print ' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}'.format(0.0,erg0,erg0,erg0)
     # outfile1.write(' {0:10.4f} {1:15.7f} {2:15.7f} {3:15.7f}\n'.format(0.0,erg0,erg0,erg0))
-    ddlt= dltmax/niter
+    dmin= 1.0-strain
+    dmax= 1.0+strain
+    ddlt= (dmax-dmin)/(niter-1)
     ncalc= 0
-    for iter in range(-niter/2,niter/2+1):
-        #dlt= (ddlt*(iter+1))
-        dlt= ddlt*iter
+    for iter in range(niter):
+        dlt= dmin +ddlt*iter
         dh= hmax*dlt
         #...uniaxial strain for calc C11
         hmat= np.copy(hmat0)
         hmat[0,0]= hmat[0,0] +dh
         replace_hmat(hmat)
         os.system(cmd)
-        #erg11= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg11= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         ncalc += 1
         dname="elastic-{0:05d}".format(ncalc)
@@ -127,7 +118,6 @@ if __name__ == '__main__':
         hmat[2,2]= hmat[2,2] +dh**2/(1.0-dh**2)
         replace_hmat(hmat)
         os.system(cmd)
-        #erg12= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg12= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         ncalc += 1
         dname="elastic-{0:05d}".format(ncalc)
@@ -141,7 +131,6 @@ if __name__ == '__main__':
         hmat[2,2]= hmat[2,2] +dh**2/(4.0-dh**2)
         replace_hmat(hmat)
         os.system(cmd)
-        #erg44= float(commands.getoutput("grep 'potential energy' out.pmd | head -n1 | awk '{print $3}'"))
         erg44= float(commands.getoutput("tail -n1 OSZICAR | awk '{print $5}'"))
         ncalc += 1
         dname="elastic-{0:05d}".format(ncalc)
@@ -211,20 +200,6 @@ if __name__ == '__main__':
     logfile.write(str)
     logfile.close()
 
-    if shows_graph:
-        plt.plot(dlts,quad_func(dlts,*popt11),dlts,e11s,'o')
-        plt.plot(dlts,quad_func(dlts,*popt12),dlts,e12s,'o')
-        plt.plot(dlts,quad_func(dlts,*popt44),dlts,e44s,'o')
-        plt.title('Energy vs. strain')
-        plt.legend(['C11 fitted','C11 data'
-                    ,'C12 fitted','C12 data'
-                    ,'C44 fitted','C44 data'],loc=2)
-        plt.xlabel('Strain')
-        plt.ylabel('Energy (eV)')
-        plt.savefig(graphname,dpi=150)
-        plt.show()
-
     print '{0:=^72}'.format(' OUTPUT ')
     print ' * '+outfname
     print ' * '+logfname
-    print ' * '+graphname

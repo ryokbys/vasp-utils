@@ -17,7 +17,7 @@ INPUT: (these files must be in the working directory)
 
 import os
 import optparse
-from AtomSystem import AtomSystem
+from atom_system import AtomSystem
 import numpy as np
 
 def output_AtomSystem(aSys,format,num):

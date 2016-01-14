@@ -3,15 +3,25 @@
 Make appropriate INCAR and kPOINTS files for VASP calculation
 from POSCAR and POTCAR files. Number of division in each k-space direction
 must be set, otherwise default NORMAL accuracy setting will be chosen.
+
+Usage:
+  prepare.py [options]
+
+Options:
+  -h, --help  Show this help and exit.
+  -p, --pitch=PITCH
+              Pitch of k in each direction in A^{-1}. [default: 0.1]
+  -e, --even
+              Flag to set number of k-points in a direction even. [default: False]
 """
 
-import math,optparse
-import POSCAR,POTCAR
-
-_usage= '%prog [options]'
+from docopt import docopt
+import math
+import poscar, potcar
 
 
 _version='0.1a'
+
 _SYSTEM='system made by prepare-vasp.py '+ _version
 _metal= False
 _spin_polarized= False
@@ -26,14 +36,37 @@ _NSW= 0 # number of ion relaxation steps
 
 _NPAR= 4
 
-def determine_num_kpoint(b_length,pitch,leven):
-    # maximum 11
+_defaults ={'SYSTEM': ' system made via prepare-vasp.py'+_version,
+            'ISYM': ' 2',
+            'ISPIN': ' 2',
+            'IBRION': ' -1',
+            'ISIF': ' 2',
+            'NSW': ' 0',
+            'NPAR': ' 4',
+}
+_comments ={'ISTART': ' # startjob [0:no 1:use WAVECAR 2:samecut]',
+            'ICHARG': ' # charge [1:use CHGCAR 2:from atoms 10:const.]'
+            'PREC': ' # precession [medium/high/low/normal/accurate]',
+            'ISPIN': ' # spin [1:non-polarized 2:polarized]',
+            'INIWAV': ' # initial electr wf. [0:lowe 1:randlectr(default)]',
+            'NPAR': ' # parallelization (default: total num of nodes)',
+            'NWRITE': ' # write-flag & timer',
+            'LWAVE': ' # eigenvalues on WAVECAR',
+            'LCHARG': ' # create CHGCAR',
+            'LVTOT': ' # write LOCPOT, local potential',
+            'NBAND': ' # numer of bands to be computed',
+            'MAGMOM': ' # magnetic moment',
+            'ENCUT': ' # energy cutoff in eV',
+            'EDIFF': ' # stopping-criterion for electronic update',
+            'NSW': ' # number of io relaxation steps',
+            'ISIF': ' # 2: relax ions only, 3:shell-shape too, 4:shell volume too',
+            'IBRION': ' # -1:no update, 0:MD, 1:q-Newton, 2:CG, 3:damped MD',
+}
+
+def get_num_kpoint(b_length,pitch,leven):
     # minimum 1
     nk= int(2.0 *math.pi /b_length /pitch)
-    if nk > 11:
-        return 11
-    elif nk < 1:
-        return 1
+    if nk < 1: return 1
     if leven:
         if nk % 2 == 1:
             nk= nk +1
@@ -107,22 +140,10 @@ def write_INCAR(fname,encut,nbands):
 
 if __name__ == '__main__':
 
-    parser= optparse.OptionParser(usage=_usage)
-    parser.add_option("-p","--pitch",
-                      dest="pitch",
-                      type="float",
-                      default=0.2,
-                      help="pitch of k in a direction.")
-    parser.add_option("-e","--even",
-                      action="store_true",
-                      dest="leven",
-                      default=False,
-                      help="flag to set number of k-points in a direction even.")
 
-    (options,args)= parser.parse_args()
-
-    pitch= options.pitch
-    leven= options.leven
+    args= docopt(__doc__)
+    pitch= float(args['--pitch'])
+    leven= args['--even']
 
     print ' Pitch of k points = {0:5.1f}'.format(pitch)
 
@@ -164,9 +185,9 @@ if __name__ == '__main__':
     print '   l1 = {0:10.3f}'.format(l1)
     print '   l2 = {0:10.3f}'.format(l2)
     print '   l3 = {0:10.3f}'.format(l3)
-    k1= determine_num_kpoint(l1,pitch,leven)
-    k2= determine_num_kpoint(l2,pitch,leven)
-    k3= determine_num_kpoint(l3,pitch,leven)
+    k1= get_num_kpoint(l1,pitch,leven)
+    k2= get_num_kpoint(l2,pitch,leven)
+    k3= get_num_kpoint(l3,pitch,leven)
     print ' Number of k-points: {0:2d} {1:2d} {2:2d}'.format(k1,k2,k3)
     ndiv= [k1,k2,k3]
     
