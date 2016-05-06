@@ -13,7 +13,7 @@ Usage:
 Options:
   -h, --help  Shows this message and exit.
   --cmd=CMD   Specifies VASP command. [default: 'vasp > out.vasp']
-  -n NITER    Number of points to be calculated. [default: 5]
+  -n NITER    Number of points to be calculated. [default: 11]
               In case of even number, original size is not used.
   --no-LS     Do not perform least square fitting. [default: False]
   -s STRAIN   Maximum strain value in a direction in %. [default: 5.0]
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     elif args['analyze']:
         try:
             with open(_confname,'r') as f:
-                config= json.loads(f)
+                config= json.load(f)
         except:
             raise RuntimeError('Cannot read '+_confname)
         analyze(config)
