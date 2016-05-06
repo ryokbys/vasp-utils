@@ -11,16 +11,19 @@ Options:
   -h, --help  Show this help and exit.
   -p, --pitch=PITCH
               Pitch of k in each direction in A^{-1}. [default: 0.1]
-  -e, --even
-              Flag to set number of k-points in a direction even. [default: False]
+  --pot-dir=POTDIR
+              Directory path where vasp potentials are. [default "~/local/vasp/potpaw_PBE"]
 """
 
 from docopt import docopt
 import math
 import poscar, potcar
+import numpy as np
 
 
-_version='0.1a'
+__author__  = 'Ryo KOBAYASHI'
+__version__ = '160115'
+__license__ = 'MIT'
 
 _SYSTEM='system made by prepare-vasp.py '+ _version
 _metal= False
@@ -63,17 +66,18 @@ _comments ={'ISTART': ' # startjob [0:no 1:use WAVECAR 2:samecut]',
             'IBRION': ' # -1:no update, 0:MD, 1:q-Newton, 2:CG, 3:damped MD',
 }
 
-def get_num_kpoint(b_length,pitch,leven):
-    # minimum 1
-    nk= int(2.0 *math.pi /b_length /pitch)
-    if nk < 1: return 1
-    if leven:
-        if nk % 2 == 1:
-            nk= nk +1
-    else:
-        if nk % 2 == 0:
-            nk= nk +1
-    return nk
+def norm(vec):
+    v2= np.dot(vec,vec)
+    return np.sqrt(v2)
+
+def get_kpts(cell,pitch=0.1):
+    a1= cell[0]; a2= cell[1]; a3= cell[2]
+    b1= 2.0*np.pi *np.cross(a2,a3)/ np.dot(a1,np.cross(a2,a3))
+    b2= 2.0*np.pi *np.cross(a3,a1)/ np.dot(a2,np.cross(a3,a1))
+    b3= 2.0*np.pi *np.cross(a1,a2)/ np.dot(a3,np.cross(a1,a2))
+    bb1= norm(b1); bb2= norm(b2); bb3= norm(b3)
+    kpts= (int(bb1/pitch),int(bb2/pitch),int(bb3/pitch))
+    return kpts
 
 def write_KPOINTS(fname,type,ndiv):
     f=open(fname,'w')
@@ -143,22 +147,24 @@ if __name__ == '__main__':
 
     args= docopt(__doc__)
     pitch= float(args['--pitch'])
-    leven= args['--even']
+    dpath= args['--pot-dir']
+    dpath= os.path.expanduser(dpath)
 
     print ' Pitch of k points = {0:5.1f}'.format(pitch)
 
-    poscar= POSCAR.POSCAR()
-    poscar.read()
+    posc= poscar.POSCAR()
+    posc.read()
     
-    potcar= POTCAR.read_POTCAR()
-    species= potcar['species']
-    encut= max(potcar['encut'])
-    valences= potcar['valence']
-    a1= poscar.h[:,0]
-    a2= poscar.h[:,1]
-    a3= poscar.h[:,2]
-    al= poscar.afac
-    natms= poscar.num_atoms
+    potc= potcar.read_POTCAR()
+    species= potc['species']
+    encut= max(potc['encut'])
+    valences= potc['valence']
+    a1= posc.h[:,0]
+    a2= posc.h[:,1]
+    a3= posc.h[:,2]
+    al= posc.afac
+    cell = [a1*al,a2*al,a3*al]
+    natms= posc.num_atoms
 
     print " species:",species
     print " encut:",encut
@@ -178,18 +184,7 @@ if __name__ == '__main__':
     if nbands < 50:
         nbands= nele
 
-    l1= al *math.sqrt(a1[0]**2 +a1[1]**2 +a1[2]**2)
-    l2= al *math.sqrt(a2[0]**2 +a2[1]**2 +a2[2]**2)
-    l3= al *math.sqrt(a3[0]**2 +a3[1]**2 +a3[2]**2)
-    print ' Length of each axes:'
-    print '   l1 = {0:10.3f}'.format(l1)
-    print '   l2 = {0:10.3f}'.format(l2)
-    print '   l3 = {0:10.3f}'.format(l3)
-    k1= get_num_kpoint(l1,pitch,leven)
-    k2= get_num_kpoint(l2,pitch,leven)
-    k3= get_num_kpoint(l3,pitch,leven)
-    print ' Number of k-points: {0:2d} {1:2d} {2:2d}'.format(k1,k2,k3)
-    ndiv= [k1,k2,k3]
+    kpts= get_kpts(cell,pitch)
     
-    write_KPOINTS(_KPOINTS_name,_KPOINTS_type,ndiv)
+    write_KPOINTS(_KPOINTS_name,_KPOINTS_type,kpts)
     write_INCAR(_INCAR_name,encut,nbands)
